@@ -1,12 +1,12 @@
 <script>
-  export let food;
+  export let data;
   export let show;
 
-  import MapButton from './MapButton.svelte';
+  import MapButton from './../MapButton.svelte';
 </script>
 
 <div class="item">
-  <span>{food}</span>
+  <span>{data}</span>
 
   <MapButton show={show} />
 </div>
@@ -23,7 +23,7 @@
 }
 
 .item>span {
-  font-size: 10rem;
+  font-size: 6rem;
   display: flex;
   justify-content: center;
   text-align: center;

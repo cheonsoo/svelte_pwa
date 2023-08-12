@@ -12,8 +12,10 @@
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^2.4.2",
     "@tsconfig/svelte": "^5.0.0",
+    "node-sass": "^9.0.0",
     "svelte": "^4.0.5",
     "svelte-check": "^3.4.6",
+    "svelte-preprocess": "^5.0.4",
     "tslib": "^2.6.0",
     "typescript": "^5.0.2",
     "vite": "^4.4.5",
@@ -21,6 +23,7 @@
   },
   "dependencies": {
     "@smui/button": "^7.0.0-beta.14",
+    "@smui/chips": "^7.0.0-beta.14",
     "@smui/fab": "^7.0.0-beta.14",
     "smui-theme": "^7.0.0-beta.14",
     "svelte-material-ui": "^7.0.0-beta.14"

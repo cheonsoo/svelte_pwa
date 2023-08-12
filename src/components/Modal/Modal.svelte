@@ -1,7 +1,7 @@
 <script>
 	export let showModal; // boolean
 
-  import MapImage from '../assets/map.jpeg';
+  import MapImage from '../../assets/map.jpeg';
 
 	let dialog; // HTMLDialogElement
 

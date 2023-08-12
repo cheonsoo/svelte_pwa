@@ -1,6 +1,6 @@
 <script>
   export let show = false;
-	import Modal from './Modal.svelte';
+	import Modal from './Modal/Modal.svelte';
 
 	let showModal = false;
 </script>

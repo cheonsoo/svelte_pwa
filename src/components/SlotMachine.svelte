@@ -1,90 +1,124 @@
-<script lang="ts">
-  import { onMount } from "svelte";
-  import Item from './Item.svelte';
-
-  let show = false;
-  let foods: string[] = [
-    "자장면",
-    "돈가스",
-    "피자",
-    "햄버거",
-    "스파게티",
-    "냉모밀",
-    "부대찌게",
-    "칼국수",
-    "스테이크",
-    "초밥"
-  ];
-  const initialValue = `오늘 뭐 먹지?`;
-  let boxRef: HTMLElement;
-  const itemHeight: number = document.body.clientHeight;
-  let flg: boolean = false;
-
-  onMount(() => {
-    console.log("### mounted");
-  });
-
-  function init() {
-    boxRef.style.transitionDuration = `0s`;
-    boxRef.style.transform = `translateY(-${itemHeight * (foods.length - 1)}px)`;
-
-    foods = shuffle(foods);
-
-      // Initialize transition events
-      boxRef.addEventListener("transitionstart", function() {
-        show = false;
-
-        document.querySelectorAll('.item').forEach((item: HTMLElement) => (item.style.filter = 'blur(1px)'));
-        boxRef.removeEventListener("click", roll);
-      }, {
-        once: true
-      });
-      boxRef.addEventListener("transitionend", function() {
-        document.querySelectorAll('.item').forEach((item: HTMLElement) => (item.style.filter = 'blur(0)'));
-        boxRef.addEventListener("click", roll);
-
-        setTimeout(() => {
-          show = true;
-        }, 300);
-      }, {
-        once: true
-      });
-    }
-
-    function shuffle([...arr]) {
-      let m: number = arr.length;
-      while (m) {
-        const i: number = Math.floor(Math.random() * m--);
-        [arr[m], arr[i]] = [arr[i], arr[m]];
-      }
-      return arr;
-    }
-
-    function roll() {
-      init();
-
-      flg = true;
-
-      setTimeout(function() {
-        boxRef.style.transitionDuration = `2s`;
-        boxRef.style.transform = `translateY(0)`;
-      }, 100);
-    }
-</script>
-
 <div class="app">
   <div class="container">
-    <div class="box" bind:this={boxRef} on:click={roll}>
+    <div class="box" tabindex="0" role="button" bind:this={boxRef} on:click={roll} on:keypress={roll} aria-label="click">
+      <CandidatesComponent />
+      <div class="btns">
+        <button class='add-btn' on:click={event => addItem(event)}></button>
+        <button class='clear-btn' on:click={event => clearAllItems(event)}>clear</button>
+      </div>
+
       {#if !flg}
-        <Item food={initialValue} show={show} />
+        <Item data={initialValue} show={show} />
       {:else}
-        {#each foods as item, index}
-          <Item food={item} show={show} />
+        {#each rolls as item}
+          <Item data={item} show={show} />
         {/each}
       {/if}
     </div>
   </div>
 </div>
+
+<script lang="ts">
+  import Item from './Item/Item.svelte';
+  import CandidatesComponent from './Candidates/Candidates.svelte';
+
+  import { candidates } from '../store/candidates';
+  import { openAddItemFlg } from '../store/modal';
+
+  interface ICandidate {
+    k: number;
+    v: string;
+  };
+
+  interface ICandidates extends Array<ICandidate>{};
+
+  let show: boolean = false;
+  let foods: ICandidates = [
+    { k: 1, v: "자장면" },
+    { k: 2, v: "돈가스" },
+    { k: 3, v: "피자" },
+    { k: 4, v: "햄버거" },
+    { k: 5, v: "스파게티" },
+    { k: 6, v: "냉모밀" },
+    { k: 7, v: "부대찌게" },
+    { k: 8, v: "칼국수" },
+    { k: 9, v: "스테이크" },
+    { k: 10, v: "초밥" }
+  ];
+
+  const initialValue = '오늘의 PICK';
+  let boxRef: HTMLElement;
+  const itemHeight: number = document.body.clientHeight;
+  let flg: boolean = false;
+  $candidates = foods;
+  let rolls = [];
+
+  candidates.subscribe(() => {
+    console.log('### subscribe');
+    console.log($candidates);
+  });
+
+  function init() {
+    const items: string[] = $candidates.map(item => item.v);
+    const MAX_ITEMS: number = 20;
+    rolls = shuffle([ ...items, ...items ]);
+    console.log(rolls);
+
+    boxRef.style.transitionDuration = `0s`;
+    boxRef.style.transform = `translateY(-${itemHeight * (rolls.length - 1)}px)`;
+
+
+    // Initialize transition events
+    boxRef.addEventListener("transitionstart", function() {
+      // show = false;
+
+      document.querySelectorAll('.item').forEach((item: HTMLElement) => (item.style.filter = 'blur(1px)'));
+      boxRef.removeEventListener("click", roll);
+    }, {
+      once: true
+    });
+    boxRef.addEventListener("transitionend", function() {
+      document.querySelectorAll('.item').forEach((item: HTMLElement) => (item.style.filter = 'blur(0)'));
+      boxRef.addEventListener("click", roll);
+
+      // setTimeout(() => {
+      //   show = true;
+      // }, 300);
+    }, {
+      once: true
+    });
+  }
+
+  function shuffle([ ...arr ]) {
+    return arr.sort(() => Math.random() - 0.5);
+  }
+
+  function roll() {
+    if ($candidates.length === 0) {
+      alert('Please add items');
+      return;
+    }
+
+    init();
+
+    flg = true;
+
+    setTimeout(function() {
+      boxRef.style.transitionDuration = `3s`;
+      boxRef.style.transform = `translateY(0)`;
+    }, 100);
+  }
+
+  function addItem(event: any) {
+    event.stopPropagation();
+    $openAddItemFlg = true;
+  }
+
+  function clearAllItems(event: any) {
+    event.stopPropagation();
+    $candidates = [];
+  }
+</script>
 
 <style>
 .app {
@@ -112,5 +146,43 @@
   padding: 0;
   margin: 0;
   transition: transform 1s ease-in-out;
+}
+
+.btns {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  align-items: center;
+  justify-content: right;
+  position: fixed;
+  bottom: 0px;
+}
+
+.add-btn {
+  clip-path: polygon(0 33%, 35% 33%, 35% 0%, 66% 0, 66% 33%, 100% 33%, 100% 66%, 66% 66%, 66% 100%, 35% 100%, 35% 66%, 0 66%);
+  width: 30px;
+  height: 40px;
+  z-index: 11111;
+  display: block;
+  background-color: #fff;
+}
+
+.x-btn {
+  clip-path: polygon(20% 0%, 0% 20%, 30% 50%, 0% 80%, 20% 100%, 50% 70%, 80% 100%, 100% 80%, 70% 50%, 100% 20%, 80% 0%, 50% 30%);
+  width: 30px;
+  height: 40px;
+}
+
+.clear-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 45px;
+  font-weight: 900;
+  z-index: 11111;
+  background-color: transparent;
+  margin: 0;
+  padding: 5px 10px;
+  text-transform: uppercase;
 }
 </style>
