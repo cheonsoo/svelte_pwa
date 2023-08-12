@@ -8,7 +8,7 @@
 <Dialog />
 
 <script lang="ts">
-  import Chip, { Set, TrailingAction, Text } from '@smui/chips';
+  import Chip, { Set, TrailingAction } from '@smui/chips';
   import Dialog from './Dialog.svelte';
   import { candidates } from '../../store/candidates';
 

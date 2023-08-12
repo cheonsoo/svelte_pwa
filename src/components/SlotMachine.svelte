@@ -1,11 +1,14 @@
 <div class="app">
   <div class="container">
     <div class="box" tabindex="0" role="button" bind:this={boxRef} on:click={roll} on:keypress={roll} aria-label="click">
-      <CandidatesComponent />
-      <div class="btns">
-        <button class='add-btn' on:click={event => addItem(event)}></button>
-        <button class='clear-btn' on:click={event => clearAllItems(event)}>clear</button>
-      </div>
+      {#if showBtns}
+        <CandidatesComponent />
+
+        <div class="btns">
+          <button class='clear-btn' on:click={event => clearAllItems(event)}>clear</button>
+          <button class='add-btn' on:click={event => addItem(event)}></button>
+        </div>
+      {/if}
 
       {#if !flg}
         <Item data={initialValue} show={show} />
@@ -19,6 +22,7 @@
 </div>
 
 <script lang="ts">
+  import { onMount } from 'svelte';
   import Item from './Item/Item.svelte';
   import CandidatesComponent from './Candidates/Candidates.svelte';
 
@@ -33,6 +37,7 @@
   interface ICandidates extends Array<ICandidate>{};
 
   let show: boolean = false;
+  let showBtns: boolean = true;
   let foods: ICandidates = [
     { k: 1, v: "자장면" },
     { k: 2, v: "돈가스" },
@@ -54,14 +59,30 @@
   let rolls = [];
 
   candidates.subscribe(() => {
-    console.log('### subscribe');
-    console.log($candidates);
+    console.table($candidates);
+  });
+
+  onMount(() =>  {
+    const prev = window.localStorage.getItem('prev-items');
+    try {
+      if (prev !== '')
+        $candidates = JSON.parse(prev);
+    } catch (e) {
+      console.error('parse error');
+    }
+
   });
 
   function init() {
+    window.localStorage.setItem('prev-items', JSON.stringify($candidates));
+
     const items: string[] = $candidates.map(item => item.v);
     const MAX_ITEMS: number = 20;
-    rolls = shuffle([ ...items, ...items ]);
+    rolls = [ ...items ];
+    for (let i=0; i<MAX_ITEMS / items.length - 1; i++) {
+      rolls = [ ...rolls, ...items ];
+    }
+    rolls = shuffle(rolls);
     console.log(rolls);
 
     boxRef.style.transitionDuration = `0s`;
@@ -70,7 +91,7 @@
 
     // Initialize transition events
     boxRef.addEventListener("transitionstart", function() {
-      // show = false;
+      showBtns = false;
 
       document.querySelectorAll('.item').forEach((item: HTMLElement) => (item.style.filter = 'blur(1px)'));
       boxRef.removeEventListener("click", roll);
@@ -81,9 +102,9 @@
       document.querySelectorAll('.item').forEach((item: HTMLElement) => (item.style.filter = 'blur(0)'));
       boxRef.addEventListener("click", roll);
 
-      // setTimeout(() => {
-      //   show = true;
-      // }, 300);
+      setTimeout(() => {
+        showBtns = true;
+      }, 500);
     }, {
       once: true
     });
@@ -94,7 +115,7 @@
   }
 
   function roll() {
-    if ($candidates.length === 0) {
+    if ($candidates.length < 2) {
       alert('Please add items');
       return;
     }
@@ -154,7 +175,7 @@
   width: 100%;
   align-items: center;
   justify-content: right;
-  position: fixed;
+  position: absolute;
   bottom: 0px;
 }
 
@@ -165,13 +186,15 @@
   z-index: 11111;
   display: block;
   background-color: #fff;
+  margin-right: 10px;
+  outline: none;
 }
 
-.x-btn {
+/* .x-btn {
   clip-path: polygon(20% 0%, 0% 20%, 30% 50%, 0% 80%, 20% 100%, 50% 70%, 80% 100%, 100% 80%, 70% 50%, 100% 20%, 80% 0%, 50% 30%);
   width: 30px;
   height: 40px;
-}
+} */
 
 .clear-btn {
   display: flex;
@@ -184,5 +207,6 @@
   margin: 0;
   padding: 5px 10px;
   text-transform: uppercase;
+  outline: none;
 }
 </style>

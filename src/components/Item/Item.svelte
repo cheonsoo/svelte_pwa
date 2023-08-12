@@ -23,7 +23,7 @@
 }
 
 .item>span {
-  font-size: 6rem;
+  font-size: 5rem;
   display: flex;
   justify-content: center;
   text-align: center;

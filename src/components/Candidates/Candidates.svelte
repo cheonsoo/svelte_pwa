@@ -1,8 +1,6 @@
 <script lang="ts">
   import Chips from './Chips.svelte';
   import { candidates } from '../../store/candidates';
-
-  console.log('### candidates: ', $candidates);
 </script>
 
 <div class="candidates">
